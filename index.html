@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+  <title>Guest Registration App</title>
+</head>
+<body>
+  <div class="card">
+    <h2>Guest Registration</h2>
+    <form id="registration-form">
+      <label for="name">Name:</label>
+      <input type="text" id="name" required>
+      <label for="idNumber">ID Number:</label>
+      <input type="text" id="idNumber" required>
+      <label for="feePaid">Fee Paid ($):</label>
+      <input type="number" id="feePaid" required>
+      <button type="submit">Register</button>
+    </form>
+  </div>
+  <div class="registration-list">
+    <h2>Registered Guests</h2>
+    <ul id="guest-list"></ul>
+  </div>
+  
+  <script>
+    const form = document.getElementById('registration-form');
+    const guestList = document.getElementById('guest-list');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const name = form.querySelector('#name').value;
+      const idNumber = form.querySelector('#idNumber').value;
+      const feePaid = form.querySelector('#feePaid').value;
+
+      const response = await fetch('/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, idNumber, feePaid }),
+      });
+
+      if (response.ok) {
+        console.log('Guest registered successfully');
+        // Reset the form after successful registration
+        form.reset();
+        // Refresh the guest list
+        await refreshGuestList();
+      } else {
+        console.error('Error registering guest');
+      }
+    });
+
+    async function refreshGuestList() {
+      guestList.innerHTML = '';
+
+      const response = await fetch('/guests');
+      const data = await response.json();
+
+      data.forEach((guest) => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `${guest.name} - ID: ${guest.idNumber}, Fee Paid: $${guest.feePaid}`;
+        guestList.appendChild(listItem);
+      });
+    }
+
+    // Initial load of the guest list
+    refreshGuestList();
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>
